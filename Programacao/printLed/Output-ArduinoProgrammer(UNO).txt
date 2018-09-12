@@ -1,0 +1,2 @@
+﻿avrdude.exe: can't open config file "": Invalid argument
+avrdude.exe: error reading system wide configuration file ""
