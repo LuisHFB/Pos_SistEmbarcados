@@ -15,18 +15,31 @@ int sensorValue = 0;        // Leitura do Potenciometro
 int outputValue = 0;        // Saida PWM (analog out)
 int setPoint = 0;           //Setpoint a ser definido pelo usuário
 int pos = 0;
+char csensorValue;
+
+
+char cvalorQ;
+char cvalorR;
 
 int leSens_Cond(int pinSensor, int media){
   int i;
   int sval = 0;
-
+  char valorC;
+  
   for (i = 0; i < media; i++){
     sval = sval + analogRead(pinSensor);    // salva valor lido pelo sensor
   }
 
   sval = sval / media;    // média
   sval = sval /4;         // converte para escala de 8 bits (0 - 255)
-  sval = map(sval,0,255,0,100); //mapeia de 0-100
+  sval = map(sval,0,255,0,99); //mapeia de 0-99
+
+  valorC = sval;
+  int valorQ = valorC/10;
+  int valorR = valorC%10;
+  cvalorQ = valorQ+48;
+  cvalorR = valorR+48;
+
   return sval;
 }
 
@@ -39,7 +52,7 @@ int controlMotor(){
     }
    }
    else if (sensorValue == setPoint){
-   continue;
+//    continue;
    } 
    else{
       for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
@@ -56,25 +69,32 @@ void setup() {
 }
 
 void loop() {
-   sensorValue = leSens_Cond(analogInPin, 5); //salva valor tratado como sensorValue
-  
+    csensorValue = leSens_Cond(analogInPin, 5); //salva valor tratado como sensorValue
+    BT.write('*');
+    BT.write('L');
+    BT.write(cvalorQ);
+    BT.write(cvalorR);
+    BT.write('*');
+    delay(100);
   if (BT.available()) // Read device output if available.
-  {
+  { 
     while(BT.available()) // While there is more to be read, keep reading.
    {
-     delay(10); //Delay added to make thing stable 
+     delay(10); // The DELAY! ********** VERY IMPORTANT *******
      char c = BT.read(); //Conduct a serial read
      command += c; //build the string.
-    } 
-    Serial.println("");
-    Serial.println(command);
-    Serial.print("*L"+String(sensorValue)+"*");  // Padrão "*T"+String(echotime)+"*"
-    
-    command = ""; // No repeats
-  } 
+  }
+  Serial.println(command);
+  Serial.print(setPoint);
+  
+  command = ""; // No repeats
+ }
   if (Serial.available())
   {
+    char bluetoothData=Serial.read();
+    if(bluetoothData=='S') setPoint=Serial.parseInt();
     delay(10); // The DELAY! ********** VERY IMPORTANT *******
     BT.write(Serial.read());
    }
+   
 }
