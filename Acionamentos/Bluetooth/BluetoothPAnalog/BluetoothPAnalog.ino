@@ -43,17 +43,26 @@ int leSens_Cond(int pinSensor, int media){
   return sval;
 }
 
-int controlMotor(){
+int moveMotor(){
+  int l1;
+  l1 = (command[1]-48)*10;
+  l1 = l1+(command[2]-48);
+  setPoint = l1;
+ Serial.println(setPoint);
+
+ //int mapsetPoint = map(setPoint,15,99,0,179);
+
+//myservo.write(mapsetPoint);
   if(sensorValue<setPoint){  // Se estive mais claro do que o setado
-      for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+      for (pos = 0; pos < 180; pos += 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       myservo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
     }
    }
-   else if (sensorValue == setPoint){
+//   else if (sensorValue == setPoint){
 //    continue;
-   } 
+//   } 
    else{
       for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
       myservo.write(pos);              // tell servo to go to position in variable 'pos'
@@ -66,6 +75,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Type AT commands!");
   BT.begin(9600); // HC-06 usually default baud-rate
+  myservo.attach(9);
 }
 
 void loop() {
@@ -85,14 +95,14 @@ void loop() {
      command += c; //build the string.
   }
   Serial.println(command);
-  Serial.print(setPoint);
-  
+  if(command.startsWith("S")>0) moveMotor();
   command = ""; // No repeats
  }
   if (Serial.available())
   {
-    char bluetoothData=Serial.read();
-    if(bluetoothData=='S') setPoint=Serial.parseInt();
+//    char bluetoothData=BT.read();
+//    if(bluetoothData=='S') Serial.print("Reggae");// setPoint=Serial.parseInt();
+      
     delay(10); // The DELAY! ********** VERY IMPORTANT *******
     BT.write(Serial.read());
    }
