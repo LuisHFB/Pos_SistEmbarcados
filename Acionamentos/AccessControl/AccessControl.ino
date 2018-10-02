@@ -151,7 +151,7 @@ void setup() {
           EEPROM.write(x, 0);       // if not write 0 to clear, it takes 3.3mS
         }
       }
-      Serial.println(F("EEPROM Successfully Wiped"));
+      Serial.println(F("EEPROM Zerada"));
       digitalWrite(redLed, LED_OFF);  // visualize a successful wipe
       delay(200);
       digitalWrite(redLed, LED_ON);
@@ -163,7 +163,7 @@ void setup() {
       digitalWrite(redLed, LED_OFF);
     }
     else {
-      Serial.println(F("Wiping Cancelled")); // Show some feedback that the wipe button did not pressed for 15 seconds
+      Serial.println(F("Zeramento Cancelado")); // Show some feedback that the wipe button did not pressed for 15 seconds
       digitalWrite(redLed, LED_OFF);
     }
   }
@@ -172,8 +172,8 @@ void setup() {
   // You can keep other EEPROM records just write other than 143 to EEPROM address 1
   // EEPROM address 1 should hold magical number which is '143'
   if (EEPROM.read(1) != 143) {
-    Serial.println(F("No Master Card Defined"));
-    Serial.println(F("Scan A PICC to Define as Master Card"));
+    Serial.println(F("Sem Master"));
+    Serial.println(F("Leia um PICC para defini-lo como Master"));
     do {
       successRead = getID();            // sets successRead to 1 when we get read from reader otherwise 0
       digitalWrite(blueLed, LED_ON);    // Visualize Master Card need to be defined
@@ -186,18 +186,18 @@ void setup() {
       EEPROM.write( 2 + j, readCard[j] );  // Write scanned PICC's UID to EEPROM, start from address 3
     }
     EEPROM.write(1, 143);                  // Write to EEPROM we defined Master Card.
-    Serial.println(F("Master Card Defined"));
+    Serial.println(F("Master Definido"));
   }
   Serial.println(F("-------------------"));
-  Serial.println(F("Master Card's UID"));
+  Serial.println(F("Master UID"));
   for ( uint8_t i = 0; i < 4; i++ ) {          // Read Master Card's UID from EEPROM
     masterCard[i] = EEPROM.read(2 + i);    // Write it to masterCard
     Serial.print(masterCard[i], HEX);
   }
   Serial.println("");
   Serial.println(F("-------------------"));
-  Serial.println(F("Everything is ready"));
-  Serial.println(F("Waiting PICCs to be scanned"));
+  Serial.println(F("Tudo pronto"));
+  Serial.println(F("Esperando escanneamento dos PICCs "));
   cycleLeds();    // Everything ready lets give user some feedback by cycling leds
 }
 
@@ -213,16 +213,16 @@ void loop () {
       digitalWrite(greenLed, LED_OFF);  // Make sure led is off
       digitalWrite(blueLed, LED_OFF); // Make sure led is off
       // Give some feedback
-      Serial.println(F("Wipe Button Pressed"));
-      Serial.println(F("Master Card will be Erased! in 10 seconds"));
+      Serial.println(F("Botão de apagar pressionado"));
+      Serial.println(F("Registro do cartao Master sera apagado em 10 segundos"));
       bool buttonState = monitorWipeButton(10000); // Give user enough time to cancel operation
       if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
         EEPROM.write(1, 0);                  // Reset Magic Number.
-        Serial.println(F("Master Card Erased from device"));
-        Serial.println(F("Please reset to re-program Master Card"));
+        Serial.println(F("Master apagado do registro"));
+        Serial.println(F("Resete para reprogramar o Master"));
         while (1);
       }
-      Serial.println(F("Master Card Erase Cancelled"));
+      Serial.println(F("Apagamento do Master Cancelado"));
     }
     if (programMode) {
       cycleLeds();              // Program Mode cycles through Red Green Blue waiting to read a new card
@@ -234,24 +234,24 @@ void loop () {
   while (!successRead);   //the program will not go further while you are not getting a successful read
   if (programMode) {
     if ( isMaster(readCard) ) { //When in program mode check First If master card scanned again to exit program mode
-      Serial.println(F("Master Card Scanned"));
-      Serial.println(F("Exiting Program Mode"));
+      Serial.println(F("Master lido"));
+      Serial.println(F("Saindo modo de Programa"));
       Serial.println(F("-----------------------------"));
       programMode = false;
       return;
     }
     else {
       if ( findID(readCard) ) { // If scanned card is known delete it
-        Serial.println(F("I know this PICC, removing..."));
+        Serial.println(F("PICC conhecido, removendo..."));
         deleteID(readCard);
         Serial.println("-----------------------------");
-        Serial.println(F("Scan a PICC to ADD or REMOVE to EEPROM"));
+        Serial.println(F("Passe um PICC para Adicionar ou Remover da EEPROM"));
       }
       else {                    // If scanned card is not known add it
-        Serial.println(F("I do not know this PICC, adding..."));
+        Serial.println(F("PICC nao conhecido, adicionando..."));
         writeID(readCard);
         Serial.println(F("-----------------------------"));
-        Serial.println(F("Scan a PICC to ADD or REMOVE to EEPROM"));
+        Serial.println(F("Passe um PICC para Adicionar ou Remover da EEPROM"));
       }
     }
   }
@@ -260,21 +260,21 @@ void loop () {
       programMode = true;
       Serial.println(F("Hello Master - Entered Program Mode"));
       uint8_t count = EEPROM.read(0);   // Read the first Byte of EEPROM that
-      Serial.print(F("I have "));     // stores the number of ID's in EEPROM
+      Serial.print(F("Tenho "));     // stores the number of ID's in EEPROM
       Serial.print(count);
-      Serial.print(F(" record(s) on EEPROM"));
+      Serial.print(F(" registros na EEPROM"));
       Serial.println("");
-      Serial.println(F("Scan a PICC to ADD or REMOVE to EEPROM"));
-      Serial.println(F("Scan Master Card again to Exit Program Mode"));
+      Serial.println(F("Passe um PICC para Adicionar ou Remover da EEPROM"));
+      Serial.println(F("Passe o Master novamemnte para sair do Modo de Programa"));
       Serial.println(F("-----------------------------"));
     }
     else {
       if ( findID(readCard) ) { // If not, see if the card is in the EEPROM
-        Serial.println(F("Welcome, You shall pass"));
+        Serial.println(F("Pode passar"));
         granted(300);         // Open the door lock for 300 ms
       }
       else {      // If not, show that the ID was not valid
-        Serial.println(F("You shall not pass"));
+        Serial.println(F("Nops!"));
         denied();
       }
     }
@@ -313,7 +313,7 @@ uint8_t getID() {
   // There are Mifare PICCs which have 4 byte or 7 byte UID care if you use 7 byte PICC
   // I think we should assume every PICC as they have 4 byte UID
   // Until we support 7 byte PICCs
-  Serial.println(F("Scanned PICC's UID:"));
+  Serial.println(F("PICC's UID:"));
   for ( uint8_t i = 0; i < 4; i++) {  //
     readCard[i] = mfrc522.uid.uidByte[i];
     Serial.print(readCard[i], HEX);
@@ -372,8 +372,8 @@ void normalModeOn () {
 }
 
 //////////////////////////////////////// Read an ID from EEPROM //////////////////////////////
-void readID( uint8_t number ) {
-  uint8_t start = (number * 4 ) + 2;    // Figure out starting position
+void readID( uint8_t num ) {
+  uint8_t start = (num * 4 ) + 2;    // Figure out starting position
   for ( uint8_t i = 0; i < 4; i++ ) {     // Loop 4 times to get the 4 Bytes
     storedCard[i] = EEPROM.read(start + i);   // Assign values read from EEPROM to array
   }
@@ -390,11 +390,11 @@ void writeID( byte a[] ) {
       EEPROM.write( start + j, a[j] );  // Write the array values to EEPROM in the right position
     }
     successWrite();
-    Serial.println(F("Succesfully added ID record to EEPROM"));
+    Serial.println(F("ID salvo na EEPROM"));
   }
   else {
     failedWrite();
-    Serial.println(F("Failed! There is something wrong with ID or bad EEPROM"));
+    Serial.println(F("Erro! Algo de errado com ID ou EEPROM"));
   }
 }
 
@@ -423,7 +423,7 @@ void deleteID( byte a[] ) {
       EEPROM.write( start + j + k, 0);
     }
     successDelete();
-    Serial.println(F("Succesfully removed ID record from EEPROM"));
+    Serial.println(F("ID Removido da EEPROM"));
   }
 }
 
