@@ -1,17 +1,18 @@
 #include <RotaryEncoder.h>
+#include <Servo.h>
 
 #define wipeB 5 //botão SW
 
 RotaryEncoder encoder(A2, A3);
+Servo myservo; 
 
 signed int senha[] = {15,-22,15}; // senha salva
 signed int matriz[3]; //guarda senha lida
 boolean match = false;
-static int n = 0;
-static int pos = 0;
+int pos = 0;
 
 void setup() {
-
+  myservo.attach(9);
   pinMode(wipeB, INPUT_PULLUP);   // Enable pin's pull up resistor
   Serial.begin(57600);
   
@@ -46,6 +47,10 @@ void loop() {
     pos = newPos;
   }
   else {
+    static int n = 0;
+    static int pos = 0;
+    myservo.write(5);
+    
     bool buttonState = monitorWipeButton(1000);
     if (buttonState)
     {
@@ -70,11 +75,15 @@ void loop() {
       if (match)
       {
         Serial.print("Destrava"); //Destrava
+        myservo.write(90);              // tell servo to go to position in variable 'pos'
+        delay(15);
         n = 0;
       }
       else
       {
         Serial.print("Bloqueia"); //bloqueia
+        myservo.write(5);              // tell servo to go to position in variable 'pos'
+        delay(15);
         n = 0;
       }
 
